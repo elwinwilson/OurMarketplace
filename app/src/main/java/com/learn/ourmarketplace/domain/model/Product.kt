@@ -6,5 +6,6 @@ data class Product(
     val description: String,
     val price: Double,
     val imageUrl: String,
-    val isFavorite: Boolean = false
+    val isFavorite: Boolean = false,
+    val isPendingSync: Boolean = false
 )

@@ -30,7 +30,10 @@ class MainActivity : ComponentActivity() {
                 MarketplaceNavHost(
                     uiState = uiState,
                     onFavoriteClick = viewModel::toggleFavorite,
-                    onRefresh = viewModel::refresh
+                    onRefresh = viewModel::refresh,
+                    onAddProduct = { title, description, price, imageUri ->
+                        viewModel.addProduct(title, description, price, imageUri)
+                    }
                 )
             }
         }

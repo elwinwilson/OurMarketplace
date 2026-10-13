@@ -10,14 +10,28 @@ fun ProductEntity.toDomain() = Product(
     description = description,
     price = price,
     imageUrl = imageUrl,
-    isFavorite = isFavorite
+    isFavorite = isFavorite,
+    isPendingSync = isUserCreated && !isSynced
 )
 
-fun ProductDto.toEntity(isFavorite: Boolean = false) = ProductEntity(
+fun ProductDto.toEntity(
+    isFavorite: Boolean = false,
+    isUserCreated: Boolean = false
+) = ProductEntity(
     id = id,
     title = title,
     description = description,
     price = price,
     imageUrl = image,
-    isFavorite = isFavorite
+    isFavorite = isFavorite,
+    isUserCreated = isUserCreated,
+    isSynced = true
+)
+
+fun ProductEntity.toDto() = ProductDto(
+    id = id,
+    title = title,
+    description = description,
+    price = price,
+    image = imageUrl
 )

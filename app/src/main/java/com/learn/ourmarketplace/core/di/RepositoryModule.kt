@@ -3,8 +3,10 @@ package com.learn.ourmarketplace.core.di
 import com.learn.ourmarketplace.data.repository.ProductRepositoryImpl
 import com.learn.ourmarketplace.domain.repository.ProductRepository
 import com.learn.ourmarketplace.domain.usecase.ObserveProductsUseCase
+import com.learn.ourmarketplace.domain.usecase.AddProductUseCase
 import com.learn.ourmarketplace.domain.usecase.RefreshProductsUseCase
 import com.learn.ourmarketplace.domain.usecase.SetProductFavoriteUseCase
+import com.learn.ourmarketplace.domain.usecase.SyncPendingProductsUseCase
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -32,6 +34,14 @@ object UseCaseModule {
         RefreshProductsUseCase(repository)
 
     @Provides
+    fun provideAddProduct(repository: ProductRepository) =
+        AddProductUseCase(repository)
+
+    @Provides
     fun provideSetProductFavorite(repository: ProductRepository) =
         SetProductFavoriteUseCase(repository)
+
+    @Provides
+    fun provideSyncPendingProducts(repository: ProductRepository) =
+        SyncPendingProductsUseCase(repository)
 }

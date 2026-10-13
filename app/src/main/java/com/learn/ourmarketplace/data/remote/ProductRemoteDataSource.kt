@@ -6,4 +6,6 @@ class ProductRemoteDataSource @Inject constructor(
     private val productsApi: ProductsApi
 ) {
     suspend fun fetchProducts() = productsApi.getProducts()
+
+    suspend fun createProduct(product: ProductDto) = productsApi.createProduct(product)
 }

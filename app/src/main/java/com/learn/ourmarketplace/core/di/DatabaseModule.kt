@@ -16,5 +16,7 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): MarketplaceDatabase =
-        Room.databaseBuilder(context, MarketplaceDatabase::class.java, "marketplace.db").build()
+        Room.databaseBuilder(context, MarketplaceDatabase::class.java, "marketplace.db")
+            .addMigrations(MarketplaceDatabase.MIGRATION_1_2)
+            .build()
 }

@@ -1,5 +1,6 @@
 package com.learn.ourmarketplace.presentation.products
 
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -11,7 +12,8 @@ import androidx.navigation.navArgument
 fun MarketplaceNavHost(
     uiState: ProductsUiState,
     onFavoriteClick: (com.learn.ourmarketplace.domain.model.Product) -> Unit,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    onAddProduct: suspend (String, String, Double, Uri) -> Unit
 ) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "products") {
@@ -22,7 +24,17 @@ fun MarketplaceNavHost(
                     navController.navigate("product/${product.id}")
                 },
                 onFavoriteClick = onFavoriteClick,
-                onRefresh = onRefresh
+                onRefresh = onRefresh,
+                onAddProductClick = { navController.navigate("add-product") }
+            )
+        }
+        composable("add-product") {
+            AddProductScreen(
+                onBack = { navController.popBackStack() },
+                onAddProduct = { title, description, price, imageUri ->
+                    onAddProduct(title, description, price, imageUri)
+                    navController.popBackStack()
+                }
             )
         }
         composable(

@@ -1,6 +1,7 @@
 package com.learn.ourmarketplace.presentation.products
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,6 +16,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.ui.draw.clip
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Refresh
@@ -29,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,10 +49,21 @@ fun ProductListScreen(
     uiState: ProductsUiState,
     onProductClick: (Product) -> Unit,
     onFavoriteClick: (Product) -> Unit,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    onAddProductClick: () -> Unit
 ) {
     Scaffold(
         containerColor = Color.White,
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onAddProductClick,
+                shape = CircleShape,
+                containerColor = Color(0xFF00897B),
+                contentColor = Color.White
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Add product")
+            }
+        },
         topBar = {
             TopAppBar(
                 title = { Text("Our Marketplace") },
@@ -82,6 +96,14 @@ fun ProductListScreen(
             uiState.errorMessage?.let { message ->
                 Text(
                     text = "Could not refresh products: $message",
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            uiState.syncErrorMessage?.let { message ->
+                Text(
+                    text = "Could not sync new products: $message",
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
@@ -166,6 +188,14 @@ private fun ProductCard(
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
+            if (product.isPendingSync) {
+                Text(
+                    text = "Waiting to sync",
+                    modifier = Modifier.padding(start = 10.dp, end = 10.dp, bottom = 10.dp),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.labelSmall
+                )
+            }
         }
     }
 }

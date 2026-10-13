@@ -1,38 +1,72 @@
 package com.learn.ourmarketplace.data.remote
 
 import com.google.gson.Gson
-import okhttp3.Interceptor
+import com.google.gson.JsonParseException
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.Interceptor
 import okhttp3.Protocol
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
+import okio.Buffer
 
 class MockProductsInterceptor(
-    gson: Gson
+    private val gson: Gson
 ) : Interceptor {
-    private val responseJson = gson.toJson((1..PRODUCT_COUNT).map(::mockProduct))
+    private val products = (1..PRODUCT_COUNT).map(::mockProduct).toMutableList()
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         if (request.url.encodedPath != "/products") {
-            return Response.Builder()
-                .request(request)
-                .protocol(Protocol.HTTP_1_1)
-                .code(404)
-                .message("No mock response for ${request.url.encodedPath}")
-                .body("""{"error":"Not found"}""".toResponseBody(JSON_MEDIA_TYPE))
-                .build()
+            return response(request, 404, "Not Found", """{"error":"Not found"}""")
         }
 
-        return Response.Builder()
-            .request(request)
-            .protocol(Protocol.HTTP_1_1)
-            .code(200)
-            .message("OK")
-            .header("Content-Type", "application/json")
-            .body(responseJson.toResponseBody(JSON_MEDIA_TYPE))
-            .build()
+        return synchronized(products) {
+            when (request.method) {
+                "GET" -> response(request, 200, "OK", gson.toJson(products))
+                "POST" -> createProduct(request, gson)
+                else -> response(request, 405, "Method Not Allowed", """{"error":"Method not allowed"}""")
+            }
+        }
     }
+
+    private fun createProduct(request: okhttp3.Request, gson: Gson): Response {
+        val body = request.body ?: return response(
+            request,
+            400,
+            "Bad Request",
+            """{"error":"Product body is required"}"""
+        )
+        val buffer = Buffer()
+        body.writeTo(buffer)
+        val product = try {
+            gson.fromJson(buffer.readUtf8(), ProductDto::class.java)
+        } catch (_: JsonParseException) {
+            null
+        } ?: return response(request, 400, "Bad Request", """{"error":"Invalid product"}""")
+
+        val existingProduct = products.firstOrNull { it.id == product.id }
+        if (existingProduct != null && existingProduct != product) {
+            return response(request, 409, "Conflict", """{"error":"Product already exists"}""")
+        }
+        if (existingProduct == null) products.add(product)
+        val status = if (existingProduct == null) 201 else 200
+        val message = if (existingProduct == null) "Created" else "OK"
+        return response(request, status, message, gson.toJson(product))
+    }
+
+    private fun response(
+        request: okhttp3.Request,
+        code: Int,
+        message: String,
+        body: String
+    ) = Response.Builder()
+        .request(request)
+        .protocol(Protocol.HTTP_1_1)
+        .code(code)
+        .message(message)
+        .header("Content-Type", "application/json")
+        .body(body.toResponseBody(JSON_MEDIA_TYPE))
+        .build()
 
     private fun mockProduct(id: Int) = ProductDto(
         id = id,
