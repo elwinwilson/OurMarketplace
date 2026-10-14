@@ -26,9 +26,6 @@ class ProductRepositoryImpl @Inject constructor(
     override fun observeProducts(): Flow<List<Product>> =
         productDao.observeProducts().map { products -> products.map { it.toDomain() } }
 
-    override fun observeProduct(productId: Int): Flow<Product?> =
-        productDao.observeProduct(productId).map { it?.toDomain() }
-
     override suspend fun refreshProducts() = withContext(ioDispatcher) {
         val remoteProducts = remoteDataSource.fetchProducts()
         database.withTransaction {

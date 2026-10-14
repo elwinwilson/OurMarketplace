@@ -11,9 +11,6 @@ interface ProductDao {
     @Query("SELECT * FROM products ORDER BY isUserCreated DESC, id ASC")
     fun observeProducts(): Flow<List<ProductEntity>>
 
-    @Query("SELECT * FROM products WHERE id = :productId")
-    fun observeProduct(productId: Int): Flow<ProductEntity?>
-
     @Query("SELECT * FROM products")
     suspend fun getAll(): List<ProductEntity>
 
